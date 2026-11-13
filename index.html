@@ -246,6 +246,53 @@
     text-shadow: 0 0 6px rgba(0,229,255,0.6);
     box-shadow: 0 0 10px rgba(0,229,255,0.15);
   }
+  .tag-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    justify-content:center;
+    margin-bottom:14px;
+  }
+  .tag-row .category-tag{margin-bottom:0;}
+  .level-tag{
+    display:inline-block;
+    color:var(--muted);
+    font-weight:700;
+    font-size:12.5px;
+    letter-spacing:0.03em;
+    padding:3px 10px;
+    border:1px solid var(--line);
+    border-radius:5px;
+  }
+  .level-tag.adv{
+    color:var(--accent2-bright);
+    border-color:rgba(180,107,255,0.55);
+    text-shadow: 0 0 6px rgba(180,107,255,0.5);
+    box-shadow: 0 0 10px rgba(139,47,224,0.25);
+  }
+  .levelup{
+    max-width:480px;
+    margin-top:14px;
+    padding-top:12px;
+    border-top:1px dashed var(--line);
+    font-size:13px;
+    line-height:1.5;
+    color:var(--cream);
+  }
+  .levelup-tag{
+    display:block;
+    margin-bottom:3px;
+    font-size:10.5px;
+    font-weight:700;
+    letter-spacing:0.12em;
+    color:var(--accent2-bright);
+    text-shadow:0 0 6px rgba(180,107,255,0.5);
+  }
+  .chip.lvl.active{
+    background:rgba(139,47,224,0.24);
+    border-color:var(--accent2-bright);
+    color:var(--accent2-bright);
+  }
   .draw-text{
     font-family:'Big Shoulders Display',sans-serif;
     font-weight:700;
@@ -415,7 +462,7 @@
     <div id="subFilterZone" class="filters"></div>
   </div>
 
-  <div class="stage" id="stage">
+  <div class="stage" id="stage" aria-live="polite">
     <div class="stage-label" id="stageLabel">READY</div>
     <div class="stage-count" id="stageCount"></div>
     <div class="empty-state" id="emptyState">
@@ -436,82 +483,95 @@
     <div id="logList"><div class="log-empty">Nothing drawn yet.</div></div>
   </div>
 
-  <footer>"Draw a Game" pulls warm-ups, scene-work drills, and full-group structures from the published UCB Comedy Improv Manual. "Get a Prompt" is an original suggestion generator — not sourced material — meant to feed whichever game or opening you've drawn. Coaches vary on terminology, so check specifics against your own troupe's rules.</footer>
+  <footer>“Draw a Game” combines structures from the UCB Comedy Improv Manual (base reality, game of the scene, openings, Harold, Armando, Monoscene) with widely used improv exercises. “Get a Prompt” is an original generator — not sourced material — meant to feed whichever game you run. Coaches vary on terminology, so check specifics against your own troupe’s rules.</footer>
 </div>
 
 <script>
 /* ---------------------------------------------------------
-   DATA
+   DATA — GAMES
+   size = label shown on the card, min = fewest players needed,
+   level = Core (foundation) or Advanced
 --------------------------------------------------------- */
 const GAMES = [
-  // WARM-UP — verbal/rhythm warm-ups, common in UCB-trained rooms
-  {cat:"Warm-Up", size:"Whole Group", time:"3 min", text:"Zip Zap Zop", note:"Stand in a circle. Say \"Zip!\" while pointing at someone — they say \"Zap!\" to someone else, who says \"Zop!\" to a third person. Keep that three-word pattern moving with quick, clean points and real eye contact. If it breaks or stalls, just restart from the top."},
-  {cat:"Warm-Up", size:"Whole Group", time:"5 min", text:"Big Booty", note:"Stand in a circle. Go around and give everyone a rhyming nickname (e.g. \"Big Booty,\" \"Funky Cold\"). Keep a steady clap beat, then call your own name and someone else's on the beat. Whoever misses the beat or fumbles a name moves to the \"Big Booty\" spot at the front, and everyone below them shifts up one."},
-  {cat:"Warm-Up", size:"2 Players", time:"5 min", text:"Freeze Tag", note:"Two players start any scene, anywhere — no premise needed, just start moving and talking. Anyone watching can shout \"Freeze!\" at any moment, tap one of the two out, step in and strike that exact same physical pose, then start a brand-new scene justified entirely by that pose."},
-  {cat:"Warm-Up", size:"Whole Group", time:"4 min", text:"Story Swap", note:"One player starts telling any story out loud, true or made up. At any point, anyone not currently talking can call \"Swap!\" — the next player jumps in and keeps telling the same story from that exact point, even mid-sentence."},
+  // WARM-UP — verbal / rhythm warm-ups
+  {cat:"Warm-Up", size:"3+ Players", min:3, time:"5 min", level:"Core", text:"Freeze Tag", note:"Two players start any scene, anywhere — no premise needed, just start moving and talking. Anyone watching can shout “Freeze!” at any moment, tap one of the two out, step in and strike that exact same physical pose, then start a brand-new scene justified entirely by that pose.", up:"The player who steps in must change the relationship as well as the location, so the new scene can’t be a copy of the old one."},
+  {cat:"Warm-Up", size:"2+ Players", min:2, time:"4 min", level:"Core", text:"Story Swap", note:"One player starts telling any story out loud, true or made up. At any point, anyone not currently talking can call “Swap!” — the next player jumps in and keeps telling the same story from that exact point, even mid-sentence. With only two players, you simply trade off each time someone calls “Swap!”", up:"Each new teller must switch the point of view and continue as a different character from inside the story."},
+  {cat:"Warm-Up", size:"2+ Players", min:2, time:"4 min", level:"Core", text:"Mind Meld", note:"Two players face each other. On a count of three, each says a random word at the same moment. Then both think of a word that connects the two words and say it together on the next count. Keep going — each round, use the last two words — until you both say the same word at once. Celebrate, then restart with two new words.", up:"Once you match, play a 60-second scene in which that word is the most important thing in the room."},
+  {cat:"Warm-Up", size:"3 Players (2 experts + 1 asker)", min:3, time:"5 min", level:"Advanced", text:"Two-Headed Expert", note:"One player is the interviewer. The other two stand side by side and answer as ONE expert, each saying a single word in turn. The interviewer picks any topic (a Suggestion Word works well) and asks questions — “Doctor, how do I…?” The expert answers in full sentences, one word at a time, with no stalling. Swap roles after each question. With four or more players, add a third head.", up:"The interviewer asks for deeply personal advice, and the expert must answer with real conviction and one specific story."},
+  {cat:"Warm-Up", size:"3 Players", min:3, time:"5 min", level:"Advanced", text:"Gibberish Translator", note:"Two players hold a conversation entirely in gibberish — invented sounds delivered with real emotion, pacing and gesture. The third player translates every line into English for the group. The translator commits fully to whatever the tone suggests, and the gibberish speakers must go along with whatever the translation says. Rotate roles every few minutes.", up:"The translations must build one coherent story, with the speakers adjusting their performance to match it."},
+  {cat:"Warm-Up", size:"2+ Players", min:2, time:"5 min", level:"Core", text:"Hot Seat", note:"One player sits in the “hot seat” as a character of their choice — a retired spy, a lighthouse keeper, a wedding florist. The others ask questions to uncover the character’s life. The player answers fully in character, adding specific details and never saying “I don’t know.” After three minutes, the group reports the three most interesting facts they learned. Rotate who sits.", up:"The character is hiding one thing, and the questioners must uncover it using only indirect questions."},
 
-  // PHYSICAL WORK — silent, movement- and object-based warm-ups, no dialogue required
-  {cat:"Physical Work", size:"Pairs", time:"3 min", text:"Mirror", note:"Pair up, stand facing your partner about arm's length apart. Decide silently who leads first. The leader makes slow, simple movements; the follower mirrors them in real time, like a reflection. After a minute, switch who's leading — without announcing it."},
-  {cat:"Physical Work", size:"Whole Group", time:"3 min", text:"Play Ball", note:"Stand in a circle. One player mimes picking up an invisible ball, showing its size and weight through their body language. They toss it to someone else, who catches it exactly as thrown, then reshapes it into a new size or weight before throwing it on. No talking — reactions only."},
-  {cat:"Physical Work", size:"Whole Group", time:"4 min", text:"Machine", note:"One player steps into the middle, makes a repeating physical movement with a matching sound, and holds that loop. One at a time, others join in — each person attaches a new moving part and sound that physically responds to what's already there — until the whole group is one connected machine."},
-  {cat:"Physical Work", size:"Solo", time:"2 min per player", text:"Character of the Space", note:"From the UCB manual. One player enters an empty playing space in total silence. Using physical behavior alone — no words — show one clear detail: what the space is, what activity is happening, or who you are. The group should be able to name what you showed without you ever saying it out loud."},
+  // PHYSICAL WORK — silent, movement- and object-based, no dialogue required
+  {cat:"Physical Work", size:"Pairs (2+)", min:2, time:"3 min", level:"Core", text:"Mirror", note:"Pair up and stand facing your partner about arm’s length apart. Decide silently who leads first. The leader makes slow, simple movements; the follower mirrors them in real time, like a reflection. After a minute, switch who’s leading — without announcing it.", up:"Lose the leader completely — both of you follow, so the movement emerges from the two of you together."},
+  {cat:"Physical Work", size:"3+ Players", min:3, time:"4 min", level:"Core", text:"Machine", note:"One player steps into the middle, makes a repeating physical movement with a matching sound, and holds that loop. One at a time, others join in — each person attaches a new moving part and sound that responds to what’s already there — until the whole group is one connected machine.", up:"Once it’s running, someone names what the machine produces, and every part must adapt its movement to make it."},
+  {cat:"Physical Work", size:"Any size (one at a time)", min:2, time:"2 min per player", level:"Core", text:"Character of the Space", note:"From the UCB manual. One player enters an empty playing space in total silence. Using physical behavior alone — no words — show one clear detail: what the space is, what activity is happening, or who you are. The group should be able to name what you showed without you ever saying it out loud.", up:"Add an emotional history — show through behavior alone what happened here recently."},
+  {cat:"Physical Work", size:"2+ Players", min:2, time:"4 min", level:"Core", text:"Object Transformation", note:"Face each other or sit in a circle. One player holds an imaginary everyday object — a stick, a rope, a ball — and says, “This isn’t a stick, it’s a ___,” naming something new, then immediately uses it that way with their whole body. Pass it on. The next player transforms it again. No repeats, and commit to the new size, weight and use before you speak.", up:"Each transformation must grow logically out of the last — the new object comes from how you were just using the old one."},
+  {cat:"Physical Work", size:"Pairs (2+)", min:2, time:"5 min", level:"Core", text:"Sculptor and Clay", note:"One player is the sculptor and the other is the clay. In silence, the sculptor gently arranges the clay into a pose and expression, using gestures or light, agreed-upon touch only. When the sculpture is finished, the clay holds still and says one line in character. Then the sculptor steps in as a second character who justifies the pose, and the two play a short scene. Switch roles.", up:"Build a three-pose sequence that tells a story, then play it out as a scene."},
+  {cat:"Physical Work", size:"2+ Players", min:2, time:"5 min", level:"Core", text:"Group Environment", note:"One player enters the empty space and clearly mimes one object in the environment — a door they open, a counter they lean on — then holds it. The next player enters, mimes a different object, and interacts with the first one. Keep adding, one object per turn, keeping every size and position consistent. After six to eight objects, say out loud what the space is. With two or three players, go around more than once.", up:"After naming the space, each player adds a piece of its history — who was here and what happened — through one action."},
+  {cat:"Physical Work", size:"2 Players", min:2, time:"5 min", level:"Advanced", text:"Silent Scene", note:"Two players run a full scene with no words and no sounds — only movement, facial expression, eye contact and objects. In the first 30 seconds, make it clear who you are to each other and where you are. Find the first unusual thing, then repeat and heighten it three times, all silently. Anyone watching should be able to tell the story back to you afterward.", up:"Allow exactly one spoken line in the whole scene, and save it for the moment it matters most."},
+  {cat:"Physical Work", size:"2+ Players", min:2, time:"5 min", level:"Core", text:"Center of Gravity Walks", note:"Inspired by Michael Chekhov’s “imaginary center” technique. Everyone walks around the room. Imagine one point on your body leading you — your nose, chest, stomach, hips, knees — and let it pull your whole body forward. Try each point for about 30 seconds, noticing how it changes your posture, pace and attitude. Then choose the walk that feels most like a person you’d like to play, and tell a partner that person’s name, job and one want.", up:"Meet a partner in character and have a 60-second conversation without losing the walk."},
+  {cat:"Physical Work", size:"2+ Players (best with 3)", min:2, time:"6 min", level:"Advanced", text:"Three Tableaux", note:"Pick one Suggestion Word. Together, build three frozen pictures using everyone’s bodies, each showing one part of a story about that word: beginning, middle, end. You get 20 seconds to build each picture, with no talking. Hold each one for five seconds, then move silently into the next. Afterward, say out loud what story the pictures told.", up:"The final picture must change the meaning of the first one."},
+  {cat:"Physical Work", size:"2 Players", min:2, time:"5 min", level:"Advanced", text:"Slow-Motion Replay", note:"Two players play a high-stakes moment — a last-second shot, a dropped wedding ring, a near miss — entirely in slow motion, with slow movement and slow, stretched speech. Every detail of body and breath should be visible, with full commitment and real stakes. Then replay the same moment at normal speed in 30 seconds, keeping every choice from the slow version.", up:"Add a third player as a hushed documentary narrator describing the action."},
 
-  // SCENE WORK — the manual's base-reality / game-of-the-scene sequence, built for exactly 2 players
-  {cat:"Scene Work", size:"2 Players", time:"8 min", text:"Base Reality → Find & Play the Game", note:"A three-step sequence, run in order as one continuous scene: (1) For the first minute or two, only use \"Yes, And\" — agree with your partner and add one true, specific detail each time. No jokes yet, just a real, grounded world: who you are, where you are, what's happening. (2) The moment something genuinely unusual happens — an odd word, a strange behavior, an unexpected reaction — stop and say out loud exactly what that unusual thing was. (3) Restart from that unusual thing. Bring it back two more times, each time with a new logical reason and a bit more heightening, then stop. If you've got a third person watching, they can call each step for you — otherwise just call it together."},
-  {cat:"Scene Work", size:"2 Players", time:"5 min", text:"New Choice", note:"Two players start any scene. At any point, one of you (or a third person watching) can call \"New choice!\" — the player who just spoke freezes, takes back their last line, and replaces it with something different. Keep the scene going from the new line. A common tool for breaking out of the first, safest idea that comes to mind."},
+  // SCENE WORK — built for 2–3 players
+  {cat:"Scene Work", size:"2 Players", min:2, time:"8 min", level:"Core", text:"Base Reality → Find & Play the Game", note:"A three-step sequence, run in order as one continuous scene: (1) For the first minute or two, only use “Yes, And” — agree with your partner and add one true, specific detail each time. No jokes yet, just a real, grounded world: who you are, where you are, what’s happening. (2) The moment something genuinely unusual happens — an odd word, a strange behavior, an unexpected reaction — stop and say out loud exactly what that unusual thing was. (3) Restart from that unusual thing. Bring it back two more times, each time with a new logical reason and a bit more heightening, then stop. If you’ve got a third person watching, they can call each step for you — otherwise just call it together."},
+  {cat:"Scene Work", size:"2 Players", min:2, time:"5 min", level:"Core", text:"New Choice", note:"Two players start any scene. At any point, one of you (or a third person watching) can call “New choice!” — the player who just spoke freezes, takes back their last line, and replaces it with something different. Keep the scene going from the new line. A common tool for breaking out of the first, safest idea that comes to mind."},
+  {cat:"Scene Work", size:"2 Players", min:2, time:"4 min", level:"Core", text:"Questions Only", note:"Two players play a scene in which every line must be a question. A statement, a pause, or a repeated question means you lose the round — start a fresh scene (or let a third player step in). Ask questions that give your partner something to react to, like a detail, a relationship or a problem, instead of just “What?” or “Why?”"},
+  {cat:"Scene Work", size:"2 Players", min:2, time:"4 min", level:"Core", text:"Alphabet Scene", note:"Pick any relationship and location, then play a scene where each line must start with the next letter of the alphabet, beginning with A. Skip X or Z if they’re too tough. If you stall, take a breath and continue from the next letter. Aim for a scene that makes sense and has a real relationship, not just a list of sentences."},
+  {cat:"Scene Work", size:"2 Players", min:2, time:"3 min", level:"Core", text:"What Are You Doing?", note:"Player A starts miming a simple activity, like brushing teeth, and keeps doing it. Player B asks, “What are you doing?” Player A answers with something completely different from what they’re miming (“Painting a fence.”). Now Player B starts miming that new activity, and Player A asks, “What are you doing?” Keep trading. Answer fast and never repeat an activity."},
+  {cat:"Scene Work", size:"2–3 Players", min:2, time:"5 min", level:"Core", text:"Emotion Shift", note:"Two players start a scene. A third player (or a phone timer set to repeat every 60 seconds, if you’re only two) calls out an emotion — for example “jealousy” or “relief.” Both players take it on immediately and justify it inside the scene instead of stopping to explain. Change the emotion every minute and let the story follow."},
+  {cat:"Scene Work", size:"3 Players", min:3, time:"5 min", level:"Core", text:"Third Wheel", note:"Two players start a scene in a grounded, specific world. At any point, the third player enters with a clear reason to be there and a strong want that complicates what the first two are doing, without throwing out what’s already established. The first two treat the new arrival as part of the same scene. Rotate who enters."},
+  {cat:"Scene Work", size:"2 Players", min:2, time:"8 min", level:"Advanced", text:"If This Is True, What Else Is True?", note:"A core idea behind finding the game of a scene. (1) Start a base-reality scene using only “Yes, And” until something unusual shows up. (2) Stop and say out loud what the unusual thing is. (3) Take turns finishing the sentence “If that is true, then…” — each player adds one logical consequence (if the boss only communicates by whistling, then the whole office has learned to whistle back). Give five in total. (4) Restart the scene and let those facts show up naturally."},
+  {cat:"Scene Work", size:"2 Players", min:2, time:"6 min", level:"Advanced", text:"Status Scene", note:"Based on Keith Johnstone’s work on status. Each player secretly picks a status number from 1 to 10 (1 = lowest status, 10 = highest) and doesn’t share it. Play a scene from any relationship and location, showing your number through posture, voice, eye contact and how much space you take — not by talking about it. After three minutes, guess each other’s numbers."},
+  {cat:"Scene Work", size:"3 Players", min:3, time:"6 min", level:"Advanced", text:"Tag-Out", note:"Two players start a scene while the third waits at the side. At any point, the third player walks up, taps one player on the shoulder, and takes their exact position. The tapped-out player steps off. The new player keeps the same dynamic but can become a different character or take the scene somewhere new. Keep rotating for about five minutes, and make every tap-in add something to the scene."},
+  {cat:"Scene Work", size:"2 Players", min:2, time:"6 min", level:"Advanced", text:"Hidden Wants", note:"Each player silently chooses a want — something specific they’re trying to get from the other person, like an apology or a favor — and doesn’t share it. Start a scene from any relationship and location, and chase your want through your actions and word choice without announcing it. Notice the first time the two wants collide: that collision is your game, so stop avoiding it and heighten it three times."},
+  {cat:"Scene Work", size:"2 Players", min:2, time:"6 min", level:"Advanced", text:"Subtext Scene", note:"Choose a mundane topic you’ll actually talk about — making dinner, returning a library book, picking a paint color. Privately agree on what the scene is really about, such as a breakup, a secret or an old betrayal. Play the scene using only words about the mundane topic. The real subject lives in tone, pauses and eye contact, and you never name it."},
+  {cat:"Scene Work", size:"2 Players", min:2, time:"4 min", level:"Core", text:"Echo Scene", note:"Before you reply, briefly echo the part of your partner’s last line that affected you, in your own words and in character, then answer. This forces slow, deliberate listening: you have to be moved by what you actually heard. After two minutes, drop the echo out loud but keep the listening."},
+  {cat:"Scene Work", size:"2 Players", min:2, time:"8 min", level:"Advanced", text:"Character Game", note:"A drill built on the idea of using character to play the game of a scene. (1) Each player picks one specific, repeatable trait for their character — a belief, a habit or an obsession, like treating small problems as catastrophes or turning every topic into a competition. (2) Play a base-reality scene using “Yes, And” until the two traits collide. (3) Keep playing the traits at full commitment, heightening each time they are triggered, three times. The trait is the game."},
 
-  // FULL-GROUP — openings, long-form structures, and larger-ensemble drills (4+ people)
-  {cat:"Full-Group", size:"4-5 Players", time:"6 min", text:"Support Moves", note:"Two players run a scene in the middle; 2–3 more wait on the sidelines. Once the middle two find their game (a clear, repeatable unusual thing), side players can step in — but only to support that same game from a new angle, like a new character or a new detail — never to start a different one. Step back out once your moment is done."},
-  {cat:"Full-Group", size:"Whole Group", time:"3 min", text:"Monologue Opening", note:"One player sits or stands in front of the group and tells one true, personal story — something that actually happened to them, no jokes required. Everyone else just listens and picks one specific moment, feeling, or detail they could build a scene around."},
-  {cat:"Full-Group", size:"Whole Group", time:"5 min", text:"Invocation", note:"A ritual-style opening created by longform-improv teacher Del Close. Take one suggestion from the group, ideally an everyday object. As an ensemble, address it out loud — ask what it means, what it's seen, what it represents — building tone and themes together rather than jokes. Use whatever surfaces to seed your scenes afterward."},
-  {cat:"Full-Group", size:"Whole Group", time:"5 min", text:"Pattern Game", note:"Stand together in a U shape. Take one suggestion and repeat it twice to officially start. Then, one player at a time, free-associate out loud: start from the suggestion, wander to a new idea, and find your way back to the original word. Run that out-and-back loop three full times as a group, listening for scene ideas as you go."},
-  {cat:"Full-Group", size:"Whole Group", time:"4 min", text:"Organic Opening", note:"Take one suggestion. As a group, free-associate out loud with no assigned turn order or fixed ritual — let the conversation wander the way real talk does, while still circling back to the original suggestion every so often."},
-  {cat:"Full-Group", size:"Whole Group", time:"20+ min", text:"Run a Harold", note:"A full-set structure, in order: open on a suggestion → three unrelated scenes with three different pairs → one group game everyone plays → three more scenes revisiting those same characters → another group game → three closing scenes → an ending that ties the earlier threads back together."},
-  {cat:"Full-Group", size:"Whole Group", time:"15+ min", text:"Run an Armando", note:"One player tells a true, personal story to the group. The rest of the ensemble plays a full round of scenes inspired by pieces of it. After that round, return to the same monologist for a second true story, then play another round inspired by that one."},
-  {cat:"Full-Group", size:"Whole Group", time:"8+ min", text:"Run a Monoscene", note:"Two or more players start one scene and stay in it for the entire run — no cutting away to a new scene or location. Forces the story to develop through real escalation and relationship change instead of resetting on a fresh premise."}
+  // FULL-GROUP — openings, long-form structures and larger-ensemble drills (4+ people)
+  {cat:"Full-Group", size:"4–5 Players", min:4, time:"6 min", level:"Advanced", text:"Support Moves", note:"Two players run a scene in the middle; two or three more wait on the sidelines. Once the middle two find their game (a clear, repeatable unusual thing), side players can step in — but only to support that same game from a new angle, like a new character or a new detail — never to start a different one. Step back out once your moment is done."},
+  {cat:"Full-Group", size:"3+ Players", min:3, time:"3 min", level:"Core", text:"Monologue Opening", note:"One player sits or stands in front of the group and tells one true, personal story — something that actually happened to them, no jokes required. Everyone else just listens and picks one specific moment, feeling, or detail they could build a scene around."},
+  {cat:"Full-Group", size:"4+ Players", min:4, time:"5 min", level:"Advanced", text:"Invocation", note:"A ritual-style opening created by longform-improv teacher Del Close. Take one suggestion from the group, ideally an everyday object. As an ensemble, address it out loud — ask what it means, what it’s seen, what it represents — building tone and themes together rather than jokes. Use whatever surfaces to seed your scenes afterward."},
+  {cat:"Full-Group", size:"4+ Players", min:4, time:"5 min", level:"Core", text:"Pattern Game", note:"Stand together in a U shape. Take one suggestion and repeat it twice to officially start. Then, one player at a time, free-associate out loud: start from the suggestion, wander to a new idea, and find your way back to the original word. Run that out-and-back loop three full times as a group, listening for scene ideas as you go."},
+  {cat:"Full-Group", size:"4+ Players", min:4, time:"4 min", level:"Advanced", text:"Organic Opening", note:"Take one suggestion. As a group, free-associate out loud with no assigned turn order or fixed ritual — let the conversation wander the way real talk does, while still circling back to the original suggestion every so often."},
+  {cat:"Full-Group", size:"4+ Players", min:4, time:"15 min", level:"Advanced", text:"Callback Drill", note:"Run four short scenes back to back, each with a different pair and each starting from a different Suggestion Word. Then run a fifth scene where every player must bring in at least one specific detail from the earlier scenes — a line, an object, a character trait — without announcing it. Afterward, discuss which callbacks landed and why."},
+  {cat:"Full-Group", size:"4+ Players", min:4, time:"20 min", level:"Advanced", text:"Mini Set (Practice Version)", note:"A simplified practice format, not an official structure. Open with one Suggestion Word and free-associate as a group for two minutes. Then run three two-person scenes, each inspired by something from the opening. Finish with one group scene where everyone brings back a detail from the earlier scenes."},
+  {cat:"Full-Group", size:"6+ Players", min:6, time:"20+ min", level:"Advanced", text:"Run a Harold", note:"A full-set structure, in order: open on a suggestion → three unrelated scenes with three different pairs → one group game everyone plays → three more scenes revisiting those same characters → another group game → three closing scenes → an ending that ties the earlier threads back together."},
+  {cat:"Full-Group", size:"4+ Players", min:4, time:"15+ min", level:"Advanced", text:"Run an Armando", note:"One player tells a true, personal story to the group. The rest of the ensemble plays a full round of scenes inspired by pieces of it. After that round, return to the same monologist for a second true story, then play another round inspired by that one."},
+  {cat:"Full-Group", size:"2+ Players", min:2, time:"8+ min", level:"Advanced", text:"Run a Monoscene", note:"Two or more players start one scene and stay in it for the entire run — no cutting away to a new scene or location. Forces the story to develop through real escalation and relationship change instead of resetting on a fresh premise."}
 ];
 
 const CATEGORIES_SMALL = ["Warm-Up","Physical Work","Scene Work"];
 const CATEGORIES_LARGE = ["Warm-Up","Physical Work","Scene Work","Full-Group"];
-const SUGGESTION_KINDS = ["Object","Occupation","Place","Relationship"];
+const LEVELS = ["Core","Advanced"];
 
-const SUGGESTIONS = [
-  {kind:"Object", text:"toaster"},
-  {kind:"Object", text:"umbrella"},
-  {kind:"Object", text:"stapler"},
-  {kind:"Object", text:"birdhouse"},
-  {kind:"Object", text:"traffic cone"},
-  {kind:"Object", text:"extension cord"},
-  {kind:"Object", text:"parking meter"},
-  {kind:"Object", text:"welcome mat"},
-  {kind:"Occupation", text:"dog groomer"},
-  {kind:"Occupation", text:"cruise ship magician"},
-  {kind:"Occupation", text:"crossing guard"},
-  {kind:"Occupation", text:"wedding DJ"},
-  {kind:"Occupation", text:"tax auditor"},
-  {kind:"Occupation", text:"mascot performer"},
-  {kind:"Occupation", text:"long-haul trucker"},
-  {kind:"Occupation", text:"museum security guard"},
-  {kind:"Place", text:"laundromat at 2am"},
-  {kind:"Place", text:"DMV waiting room"},
-  {kind:"Place", text:"high school reunion"},
-  {kind:"Place", text:"grocery store self-checkout"},
-  {kind:"Place", text:"airport baggage claim"},
-  {kind:"Place", text:"hospital cafeteria"},
-  {kind:"Place", text:"community theater green room"},
-  {kind:"Relationship", text:"estranged siblings"},
-  {kind:"Relationship", text:"mentor and mentee"},
-  {kind:"Relationship", text:"new roommates"},
-  {kind:"Relationship", text:"in-laws"},
-  {kind:"Relationship", text:"childhood rivals"},
-  {kind:"Relationship", text:"business partners"}
+/* ---------------------------------------------------------
+   DATA — PROMPTS (original generators, not sourced material)
+--------------------------------------------------------- */
+const WORDS = {
+  Object: ["toaster","umbrella","stapler","birdhouse","traffic cone","extension cord","parking meter","welcome mat","thermostat","garden gnome","snow globe","lunchbox","snorkel","voicemail","tape measure","bicycle bell","refrigerator magnet","lava lamp","salt shaker","escalator","kazoo","name tag","shopping cart","lighthouse","phone charger","puzzle piece","trophy","doorbell","flashlight","rubber duck","vending machine","metal detector","sleeping bag","clipboard","mailbox","blender","garage door opener","bookmark"],
+  Occupation: ["dog groomer","cruise ship magician","crossing guard","wedding DJ","tax auditor","mascot performer","long-haul trucker","museum security guard","lifeguard","locksmith","hotel concierge","substitute teacher","air traffic controller","taxidermist","florist","tour guide","pest control technician","court stenographer","driving instructor","barista","piano tuner","night-shift baker","ice cream truck driver","lighthouse keeper","personal trainer","movie projectionist","school bus driver","wedding planner","auctioneer","mail carrier"],
+  Place: ["laundromat at 2am","DMV waiting room","high school reunion","grocery store self-checkout","airport baggage claim","hospital cafeteria","community theater green room","elevator","bowling alley","public library","minigolf course","aquarium gift shop","car wash","hardware store","bus station","rooftop party","petting zoo","escape room","train platform","farmers market","karaoke bar","drive-thru","dentist waiting room","campground","lost and found office","roller rink","tailgate party","movie theater lobby","ferry","thrift store","airport security line"],
+  Relationship: ["estranged siblings","mentor and mentee","new roommates","in-laws","childhood rivals","business partners","neighbors sharing a fence","coach and benchwarmer","bride and wedding planner","landlord and tenant","old college friends","babysitter and parent","grandparent and teenager","rival food truck owners","pen pals meeting for the first time","boss and intern","stepsiblings","driving instructor and student","best friends after a fight","former coworkers","godparent and godchild","understudy and star","tourist and local","magician and assistant","detective and partner","knight and squire"],
+  Activity: ["assembling furniture","parallel parking","speed dating","filing taxes","packing a suitcase","writing wedding vows","learning to swim","planting a garden","returning a gift","karaoke night","taking a family photo","building a snowman","cooking a holiday dinner","moving a couch","training for a marathon","waiting in line","birdwatching","taking a driving test","parent-teacher conference","job interview","group project","haggling at a flea market","assembling a puzzle","bake sale","camping trip","first dance","yard sale","jury duty"],
+  Emotion: ["nostalgia","jealousy","awkwardness","relief","suspicion","pride","embarrassment","impatience","boredom","hope","dread","delight","guilt","envy","curiosity","giddiness","regret","determination","awe","loneliness","confidence","panic"]
+};
+const SUGGESTION_KINDS = Object.keys(WORDS);
+const SUGGESTIONS = SUGGESTION_KINDS.flatMap(k => WORDS[k].map(text => ({kind:k, text})));
+
+const PROMPT_TYPES = [
+  {id:"suggestion", label:"Suggestion Word"},
+  {id:"starter", label:"Two-Person Starter"},
+  {id:"trio", label:"Three-Person Starter"},
+  {id:"advanced", label:"Advanced Scene"}
 ];
 
 const RELATIONSHIPS = [
   "longtime coworkers, one just got promoted over the other",
-  "estranged siblings splitting up their late parent's house",
-  "a new hire and the manager who's convinced they've met before",
-  "childhood best friends who haven't spoken in a decade",
+  "estranged siblings splitting up their late parent’s house",
+  "a new hire and the manager who’s convinced they’ve met before",
+  "childhood best friends who haven’t spoken in a decade",
   "a landlord and tenant who used to date",
   "two rival small-business owners on the same block",
   "a parent and their adult child moving back home",
@@ -519,7 +579,21 @@ const RELATIONSHIPS = [
   "a driving instructor and a student on their third failed test",
   "neighbors sharing custody of a garden plot",
   "a retiring employee and their replacement",
-  "two strangers who keep getting seated together"
+  "two strangers who keep getting seated together",
+  "roommates deciding who has to tell the landlord",
+  "a groom and his best man, ten minutes before the ceremony",
+  "two lifeguards on their first shift together",
+  "a grandparent teaching a teenager to drive",
+  "co-captains of a losing team",
+  "a customer and a salesperson who are both pretending to be experts",
+  "former business partners who still share one bank account",
+  "two siblings house-sitting for their aunt",
+  "a substitute teacher and the class clown who actually knows the material",
+  "a food critic and the chef who recognizes them",
+  "newlyweds on a honeymoon where nothing went to plan",
+  "two coworkers stuck sharing a hotel room at a conference",
+  "a podcast host and a guest who won’t stop talking",
+  "old friends at a reunion, one of whom exaggerated how their life turned out"
 ];
 
 const LOCATIONS = [
@@ -529,27 +603,117 @@ const LOCATIONS = [
   "a 24-hour laundromat at 3am",
   "a hospital waiting room during a storm",
   "a storage unit auction",
-  "the break room on someone's last day",
+  "the break room on someone’s last day",
   "a hotel lobby during a fire alarm",
   "a community garden after hours",
   "a rideshare stuck in traffic",
   "an open house nobody is buying",
-  "a diner booth during the dinner rush"
+  "a diner booth during the dinner rush",
+  "a hardware store ten minutes before closing",
+  "a lighthouse gift shop",
+  "a retirement party in a bowling alley",
+  "a very busy dentist’s waiting room",
+  "an elevator stopped between floors",
+  "a campground where the tent won’t go up",
+  "a rooftop wedding with bad weather coming",
+  "a school gym on parent-teacher night",
+  "a car dealership after hours",
+  "a snowed-in cabin",
+  "an airport gate with a canceled flight",
+  "a thrift store that’s about to close for good",
+  "a ferry crossing in heavy fog",
+  "a farmers market at opening time"
 ];
 
 const FIRST_LINES = [
-  "You weren't supposed to see that.",
+  "You weren’t supposed to see that.",
   "I think we should tell them together.",
-  "That's not what I ordered.",
+  "That’s not what I ordered.",
   "How long have you been standing there?",
   "We are never doing that again.",
   "I already called them, so.",
-  "Don't make this weird.",
+  "Don’t make this weird.",
   "You kept it this whole time?",
   "This is exactly why I never come here.",
   "I need you to be honest with me right now.",
   "So, that happened.",
-  "I didn't think you'd actually show up."
+  "I didn’t think you’d actually show up.",
+  "Okay, nobody panic.",
+  "I’ve been meaning to tell you something.",
+  "Is this seat taken, or…?",
+  "That was supposed to be a secret.",
+  "I can explain the van.",
+  "We’ve been over this.",
+  "Tell me you didn’t touch it.",
+  "How did you even get in here?",
+  "I think we’re lost.",
+  "You said you’d handle it.",
+  "Don’t look now.",
+  "I brought snacks, just in case.",
+  "Wait — you’re actually the one in charge?",
+  "I need you to hold this and not ask questions."
+];
+
+const TRIOS = [
+  "a manager, an employee, and the intern who overheard everything",
+  "a chef, a food critic, and a waiter who knows both of them",
+  "two siblings and the lawyer reading their parent’s will",
+  "a coach, a star player, and the player’s parent in the stands",
+  "a detective, a suspect, and a very enthusiastic witness",
+  "a couple and the realtor who keeps talking about the neighborhood",
+  "a groom, a best man, and a wedding photographer who has seen too much",
+  "a teacher, a student, and a principal pretending not to listen",
+  "a captain, a first mate, and a stowaway",
+  "three roommates and one very old dish in the sink",
+  "a pilot, a flight attendant, and a passenger who is clearly not who they say they are",
+  "a band manager, a lead singer, and a drummer who just quit",
+  "a tour guide and two tourists who disagree about everything",
+  "a landlord, a tenant, and a neighbor who knows too much",
+  "a customer, a cashier, and a manager who arrives at the worst moment",
+  "three coworkers who all think the same promotion is theirs"
+];
+
+const WANTS = [
+  "to get the other person to leave first",
+  "to be forgiven without having to apologize",
+  "to find out what the other person is hiding",
+  "to make a great impression",
+  "to avoid being left alone",
+  "to get a favor without asking for it",
+  "to end the conversation politely",
+  "to confess something but keep losing their nerve",
+  "to prove they were right all along",
+  "to keep a surprise from being ruined",
+  "to borrow money without saying so",
+  "to get the other person to agree to something big",
+  "to make the other person laugh",
+  "to get the last word",
+  "to avoid mentioning what happened last week",
+  "to be taken seriously",
+  "to find something they’ve lost",
+  "to impress someone who isn’t there",
+  "to be invited along"
+];
+
+const TWISTS = [
+  "Character B is lying about one important detail.",
+  "One of you can only whisper; the other never notices.",
+  "The scene must reach an agreement before it ends.",
+  "A person who never appears is the most important one in the conversation.",
+  "Both of you are pretending to be calm.",
+  "The first line is a reply to something that happened before the scene. Decide together what it was.",
+  "Character A is secretly the more powerful person in the room.",
+  "You both treat one small object as priceless. Choose the object together.",
+  "Neither of you can say the word “no.”",
+  "Whenever one of you gets louder, the other must get quieter.",
+  "Character B just heard shocking news and is trying to hide it.",
+  "Either of you may say “Three years later” once, then continue with the relationship changed.",
+  "It’s a goodbye, but nobody says so.",
+  "Neither of you can make a direct request — only hints.",
+  "Everything is said at half volume, with full emotion.",
+  "Each of you misunderstands what the other is talking about, and neither notices.",
+  "A deadline is three minutes away, and you both know it.",
+  "Character A keeps almost telling the truth."
 ];
 
 /* ---------------------------------------------------------
@@ -557,14 +721,17 @@ const FIRST_LINES = [
 --------------------------------------------------------- */
 let mode = "draw";
 let groupSize = "small";
-let activeFilters = new Set();
+let activeFilters = new Set();      // categories
+let levelFilters = new Set();       // Core / Advanced
 let promptType = "suggestion";
-let suggestionFilters = new Set();
+let suggestionFilters = new Set();  // suggestion kinds
 let log = [];
 let lastDraw = null;
+let lastFilters = null;
+const seen = { games:new Set(), words:new Set() };
 
 /* ---------------------------------------------------------
-   INIT
+   INIT / DECORATION
 --------------------------------------------------------- */
 function initBulbs(){
   const row = document.getElementById('bulbRow');
@@ -637,233 +804,307 @@ function sparkleBurst(){
   }
 }
 
+/* ---------------------------------------------------------
+   HELPERS
+--------------------------------------------------------- */
+function el(id){ return document.getElementById(id); }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function toggle(set, value){ if(set.has(value)) set.delete(value); else set.add(value); }
+
+function pickDistinct(arr, not){
+  let v = pick(arr);
+  let guard = 0;
+  while(v === not && guard++ < 20) v = pick(arr);
+  return v;
+}
+
+// pick from a pool without repeats until the whole pool has been used
+function drawFrom(pool, seenSet, keyFn){
+  if(pool.length === 0) return null;
+  let fresh = pool.filter(x => !seenSet.has(keyFn(x)));
+  if(fresh.length === 0){
+    pool.forEach(x => seenSet.delete(keyFn(x)));
+    fresh = pool;
+  }
+  const choice = pick(fresh);
+  seenSet.add(keyFn(choice));
+  return choice;
+}
+
 function visibleCategories(){
   return groupSize === "large" ? CATEGORIES_LARGE : CATEGORIES_SMALL;
 }
 
+function snapshotFilters(){
+  return { cats:new Set(activeFilters), levels:new Set(levelFilters), kinds:new Set(suggestionFilters) };
+}
+
+function resetSelections(){
+  activeFilters = new Set();
+  levelFilters = new Set();
+  suggestionFilters = new Set();
+  renderFilters();
+}
+
+function gamePool(f){
+  f = f || snapshotFilters();
+  const visible = visibleCategories();
+  return GAMES.filter(g =>
+    visible.includes(g.cat) &&
+    (groupSize === "large" || g.min <= 3) &&
+    (f.cats.size === 0 || f.cats.has(g.cat)) &&
+    (f.levels.size === 0 || f.levels.has(g.level))
+  );
+}
+
+function wordPool(f){
+  f = f || snapshotFilters();
+  return SUGGESTIONS.filter(s => f.kinds.size === 0 || f.kinds.has(s.kind));
+}
+
+/* ---------------------------------------------------------
+   FILTER CHIPS
+--------------------------------------------------------- */
+function makeChip(label, active, onClick, extraClass){
+  const chip = document.createElement('button');
+  chip.className = 'chip' + (extraClass ? ' ' + extraClass : '') + (active ? ' active' : '');
+  chip.textContent = label;
+  chip.setAttribute('aria-pressed', active ? 'true' : 'false');
+  chip.onclick = onClick;
+  return chip;
+}
+
 function renderFilters(){
-  const zone = document.getElementById('filterZone');
-  const subZone = document.getElementById('subFilterZone');
+  const zone = el('filterZone');
+  const sub = el('subFilterZone');
   zone.innerHTML = "";
-  subZone.innerHTML = "";
+  sub.innerHTML = "";
   zone.style.display = "flex";
-  subZone.style.display = "none";
+  sub.style.display = "none";
 
   if(mode === "draw"){
     visibleCategories().forEach(cat=>{
-      const chip = document.createElement('button');
-      chip.className = 'chip' + (activeFilters.has(cat) ? ' active' : '');
-      chip.textContent = cat;
-      chip.onclick = ()=>{
-        if(activeFilters.has(cat)){
-          activeFilters.delete(cat);
-        } else {
-          activeFilters.add(cat);
-        }
-        renderFilters();
-        updateCount();
-      };
-      zone.appendChild(chip);
+      zone.appendChild(makeChip(cat, activeFilters.has(cat), ()=>{
+        toggle(activeFilters, cat); renderFilters(); updateCount();
+      }));
+    });
+    sub.style.display = "flex";
+    LEVELS.forEach(lv=>{
+      sub.appendChild(makeChip(lv, levelFilters.has(lv), ()=>{
+        toggle(levelFilters, lv); renderFilters(); updateCount();
+      }, 'lvl'));
     });
   } else {
-    const options = [
-      {id:"suggestion", label:"Suggestion Word"},
-      {id:"starter", label:"Two-Person Starter"}
-    ];
-    options.forEach(opt=>{
-      const chip = document.createElement('button');
-      chip.className = 'chip' + (promptType === opt.id ? ' active' : '');
-      chip.textContent = opt.label;
-      chip.onclick = ()=>{
-        promptType = opt.id;
-        renderFilters();
-        updateCount();
-      };
-      zone.appendChild(chip);
+    PROMPT_TYPES.forEach(pt=>{
+      zone.appendChild(makeChip(pt.label, promptType === pt.id, ()=>{
+        promptType = pt.id; renderFilters(); updateCount();
+      }));
     });
-
     if(promptType === "suggestion"){
-      subZone.style.display = "flex";
+      sub.style.display = "flex";
       SUGGESTION_KINDS.forEach(kind=>{
-        const chip = document.createElement('button');
-        chip.className = 'chip' + (suggestionFilters.has(kind) ? ' active' : '');
-        chip.textContent = kind;
-        chip.onclick = ()=>{
-          if(suggestionFilters.has(kind)){
-            suggestionFilters.delete(kind);
-          } else {
-            suggestionFilters.add(kind);
-          }
-          renderFilters();
-          updateCount();
-        };
-        subZone.appendChild(chip);
+        sub.appendChild(makeChip(kind, suggestionFilters.has(kind), ()=>{
+          toggle(suggestionFilters, kind); renderFilters(); updateCount();
+        }));
       });
     }
   }
 }
 
-function gamePool(){
-  const visible = visibleCategories();
-  const inScope = GAMES.filter(g=>visible.includes(g.cat));
-  return activeFilters.size === 0 ? inScope : inScope.filter(g=>activeFilters.has(g.cat));
-}
-
 function updateCount(){
-  const countEl = document.getElementById('stageCount');
+  const countEl = el('stageCount');
+  if(!countEl) return;
   if(mode === "draw"){
     countEl.textContent = gamePool().length + " in the deck";
   } else if(promptType === "suggestion"){
-    const n = (suggestionFilters.size === 0 ? SUGGESTIONS : SUGGESTIONS.filter(s=>suggestionFilters.has(s.kind))).length;
-    countEl.textContent = n + " in the deck";
+    countEl.textContent = wordPool().length + " in the deck";
   } else {
     countEl.textContent = "";
   }
 }
 
+/* ---------------------------------------------------------
+   MODE / SIZE SWITCHING
+--------------------------------------------------------- */
+function idleHTML(m){
+  const text = m === "draw"
+    ? "Choose your group size, then tap any categories or levels you want — or tap none for a surprise — and hit <b>Draw</b>. Your selections clear after every draw. <b>Core</b> = foundation exercises anyone can run cold. <b>Advanced</b> = needs more focus or experience."
+    : "Pick a prompt type, then hit <b>Draw</b>. <b>Suggestion Word</b> feeds any game you’re running. The starters give you a ready-made setup for two or three players, and <b>Advanced Scene</b> adds wants and a twist.";
+  return `<div class="stage-label" id="stageLabel">READY</div>
+    <div class="stage-count" id="stageCount"></div>
+    <div class="empty-state" id="emptyState">${text}</div>`;
+}
+
+function setPressed(selector, attr, value){
+  document.querySelectorAll(selector).forEach(b=>{
+    const on = b.dataset[attr] === value;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+
 function switchSize(newSize){
   groupSize = newSize;
-  document.querySelectorAll('.size-btn').forEach(b=>{
-    b.classList.toggle('active', b.dataset.size === newSize);
-  });
+  setPressed('.size-btn', 'size', newSize);
   activeFilters = new Set();
+  levelFilters = new Set();
   renderFilters();
   updateCount();
 }
 
 function switchMode(newMode){
   mode = newMode;
-  document.querySelectorAll('.mode-btn').forEach(b=>{
-    b.classList.toggle('active', b.dataset.mode === newMode);
-  });
-  document.getElementById('sizeToggle').style.display = newMode === "draw" ? "flex" : "none";
-  document.getElementById('drawBtn').textContent = "Draw";
-  document.getElementById('skipBtn').style.display = 'none';
-  document.getElementById('stage').innerHTML = `
-    <div class="stage-label" id="stageLabel">READY</div>
-    <div class="stage-count" id="stageCount"></div>
-    <div class="empty-state" id="emptyState">${
-      newMode === "draw"
-      ? "Choose your group size above, pick one or more categories below, then hit <b>Draw</b>. You'll get one specific game with step-by-step instructions and a suggested run time — ready to read straight off the screen."
-      : "Choose <b>Suggestion Word</b> for a single word to fuel whatever game you're running, or <b>Two-Person Starter</b> for a full scene setup. Then hit <b>Draw</b>."
-    }</div>
-  `;
-  renderFilters();
+  setPressed('.mode-btn', 'mode', newMode);
+  el('sizeToggle').style.display = newMode === "draw" ? "flex" : "none";
+  el('skipBtn').style.display = 'none';
+  el('stage').innerHTML = idleHTML(newMode);
+  lastDraw = null;
+  lastFilters = null;
+  resetSelections();
   updateCount();
 }
 
-function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-
-function drawGame(){
-  const pool = gamePool();
-  if(pool.length === 0) return;
-  const g = pick(pool);
-  lastDraw = {kind:"game", cat:g.cat, time:g.time, size:g.size, text:g.text, note:g.note};
-  renderStage();
-  addToLog(lastDraw);
-  document.getElementById('skipBtn').style.display = 'inline-block';
+/* ---------------------------------------------------------
+   DRAWING
+--------------------------------------------------------- */
+function drawGame(f){
+  const pool = gamePool(f);
+  const g = drawFrom(pool, seen.games, x => x.text);
+  if(!g) return null;
+  return {
+    kind:"game", cat:g.cat, size:g.size, time:g.time, level:g.level, text:g.text, note:g.note, up:g.up,
+    poolSize: pool.length,
+    logLabel: g.cat.toUpperCase() + " · " + g.time + (g.level === "Advanced" ? " · ADVANCED" : ""),
+    logText: g.text
+  };
 }
 
-function drawSuggestion(){
-  const pool = suggestionFilters.size === 0 ? SUGGESTIONS : SUGGESTIONS.filter(s=>suggestionFilters.has(s.kind));
-  if(pool.length === 0) return;
-  const s = pick(pool);
-  lastDraw = {kind:"suggestion", sugKind:s.kind, text:s.text};
-  renderStage();
-  addToLog(lastDraw);
-  document.getElementById('skipBtn').style.display = 'inline-block';
+function drawSuggestion(f){
+  const pool = wordPool(f);
+  const s = drawFrom(pool, seen.words, x => x.text);
+  if(!s) return null;
+  return {
+    kind:"suggestion", sugKind:s.kind, text:s.text, poolSize: pool.length,
+    logLabel: "SUGGESTION · " + s.kind.toUpperCase(),
+    logText: s.text
+  };
 }
 
-function buildScene(){
-  const rel = pick(RELATIONSHIPS);
-  const loc = pick(LOCATIONS);
-  const line = pick(FIRST_LINES);
-  lastDraw = {kind:"scene", rel, loc, line};
-  renderStage();
-  addToLog(lastDraw);
-  document.getElementById('skipBtn').style.display = 'inline-block';
+function buildStarter(){
+  const rel = pick(RELATIONSHIPS), loc = pick(LOCATIONS), line = pick(FIRST_LINES);
+  return { kind:"starter", rel, loc, line, logLabel:"TWO-PERSON STARTER", logText: rel + " — " + loc };
 }
 
-function drawPrompt(){
-  if(promptType === "suggestion") drawSuggestion(); else buildScene();
+function buildTrio(){
+  const roles = pick(TRIOS), loc = pick(LOCATIONS), line = pick(FIRST_LINES);
+  return { kind:"trio", roles, loc, line, logLabel:"THREE-PERSON STARTER", logText: roles + " — " + loc };
+}
+
+function buildAdvanced(){
+  const rel = pick(RELATIONSHIPS), loc = pick(LOCATIONS), line = pick(FIRST_LINES);
+  const wantA = pick(WANTS), wantB = pickDistinct(WANTS, wantA), twist = pick(TWISTS);
+  return { kind:"advanced", rel, loc, line, wantA, wantB, twist, logLabel:"ADVANCED SCENE", logText: rel + " — " + loc };
+}
+
+function runDraw(f){
+  lastFilters = f;
+  let entry;
+  if(mode === "draw") entry = drawGame(f);
+  else if(promptType === "suggestion") entry = drawSuggestion(f);
+  else if(promptType === "starter") entry = buildStarter();
+  else if(promptType === "trio") entry = buildTrio();
+  else entry = buildAdvanced();
+
+  if(!entry){
+    el('stage').innerHTML = `<div class="stage-label">NO MATCH</div>
+      <div class="stage-count" id="stageCount"></div>
+      <div class="empty-state">Nothing matches that combination. Try different buttons, or tap none for a surprise.</div>`;
+    return;
+  }
+  lastDraw = entry;
+  renderStage();
+  addToLog(entry);
+  el('skipBtn').style.display = 'inline-block';
+}
+
+/* ---------------------------------------------------------
+   STAGE RENDERING
+--------------------------------------------------------- */
+function tagsHTML(tags){
+  return '<div class="tag-row">' + tags.map(t => `<span class="${t.cls}">${t.text}</span>`).join('') + '</div>';
+}
+function rowsHTML(rows){
+  return '<div class="builder-grid">' + rows.map(r =>
+    `<div class="builder-row"><span class="b-label">${r[0]}</span><span class="b-value">${r[1]}</span></div>`
+  ).join('') + '</div>';
 }
 
 function renderStage(){
-  const stage = document.getElementById('stage');
-  if(!lastDraw) return;
+  const stage = el('stage');
+  const d = lastDraw;
+  if(!d) return;
+  let label = "", inner = "";
 
-  if(lastDraw.kind === "game"){
-    stage.innerHTML = `
-      <div class="stage-label">IN PLAY</div>
-      <div class="stage-count" id="stageCount"></div>
-      <div class="category-tag">${lastDraw.cat} · ${lastDraw.size} · ${lastDraw.time}</div>
-      <div class="draw-text">${lastDraw.text}</div>
-      <div class="draw-note">${lastDraw.note}</div>
-    `;
-  } else if(lastDraw.kind === "suggestion"){
-    stage.innerHTML = `
-      <div class="stage-label">SUGGESTION</div>
-      <div class="stage-count" id="stageCount"></div>
-      <div class="category-tag">${lastDraw.sugKind}</div>
-      <div class="draw-text">${lastDraw.text}</div>
-      <div class="draw-note">Say this word or phrase out loud, exactly like an audience suggestion, to kick off a Pattern Game, Invocation, or any scene that needs a spark.</div>
-    `;
+  if(d.kind === "game"){
+    label = "IN PLAY";
+    inner = tagsHTML([
+      {cls:'category-tag', text: d.cat + ' · ' + d.size + ' · ' + d.time},
+      {cls: d.level === "Advanced" ? 'level-tag adv' : 'level-tag', text: d.level}
+    ]) + `<div class="draw-text">${d.text}</div><div class="draw-note">${d.note}</div>` +
+      (d.up ? `<div class="levelup"><span class="levelup-tag">LEVEL UP</span>${d.up}</div>` : '');
+  } else if(d.kind === "suggestion"){
+    label = "SUGGESTION";
+    inner = tagsHTML([{cls:'category-tag', text:d.sugKind}]) +
+      `<div class="draw-text">${d.text}</div>
+       <div class="draw-note">Say this word or phrase out loud, exactly like an audience suggestion, to kick off a Pattern Game, Invocation, or any scene that needs a spark.</div>`;
+  } else if(d.kind === "starter"){
+    label = "SCENE SET";
+    inner = tagsHTML([{cls:'category-tag', text:'Two-Person Starter'}]) +
+      rowsHTML([["RELATIONSHIP", d.rel], ["LOCATION", d.loc], ["FIRST LINE", "“" + d.line + "”"]]) +
+      `<div class="draw-note" style="margin-top:14px;">Send two players up with these three details already decided. They start the scene cold — the first line breaks the silence, then they play whatever relationship and location make sense from there.</div>`;
+  } else if(d.kind === "trio"){
+    label = "SCENE SET";
+    inner = tagsHTML([{cls:'category-tag', text:'Three-Person Starter'}]) +
+      rowsHTML([["THE THREE", d.roles], ["LOCATION", d.loc], ["FIRST LINE", "“" + d.line + "”"]]) +
+      `<div class="draw-note" style="margin-top:14px;">Decide who plays each of the three roles. The first line belongs to whichever character would say it first — they speak it to begin, and the other two react. Everyone adds one specific detail in the first minute before anything gets heightened.</div>`;
   } else {
-    stage.innerHTML = `
-      <div class="stage-label">SCENE SET</div>
-      <div class="stage-count" id="stageCount"></div>
-      <div class="category-tag">Two-Person Starter</div>
-      <div class="builder-grid">
-        <div class="builder-row"><span class="b-label">RELATIONSHIP</span><span class="b-value">${lastDraw.rel}</span></div>
-        <div class="builder-row"><span class="b-label">LOCATION</span><span class="b-value">${lastDraw.loc}</span></div>
-        <div class="builder-row"><span class="b-label">FIRST LINE</span><span class="b-value">"${lastDraw.line}"</span></div>
-      </div>
-      <div class="draw-note" style="margin-top:14px;">Send two players up with these three details already decided. They start the scene cold — the first line breaks the silence, then they play whatever relationship and location make sense from there.</div>
-    `;
+    label = "SCENE SET";
+    inner = tagsHTML([
+      {cls:'category-tag', text:'Advanced Scene · 2 Players'},
+      {cls:'level-tag adv', text:'Advanced'}
+    ]) +
+      rowsHTML([["RELATIONSHIP", d.rel], ["LOCATION", d.loc], ["FIRST LINE", "“" + d.line + "”"],
+                ["A WANTS", d.wantA], ["B WANTS", d.wantB], ["TWIST", d.twist]]) +
+      `<div class="draw-note" style="margin-top:14px;">Pick Character A and Character B. Everyone can read the wants — they are goals to pursue through your actions, not lines to announce. Begin with the first line and play the twist from the start. If the scene stalls, find the first unusual thing and heighten it three times.</div>`;
   }
-  updateCount();
+
+  stage.innerHTML = `<div class="stage-label">${label}</div><div class="stage-count" id="stageCount"></div>${inner}`;
+  const countEl = el('stageCount');
+  if(countEl && d.poolSize != null) countEl.textContent = d.poolSize + " in the deck";
   sparkleBurst();
 }
 
+/* ---------------------------------------------------------
+   CALL SHEET (LOG)
+--------------------------------------------------------- */
 function addToLog(entry){
   log.unshift(entry);
   renderLog();
 }
 
 function renderLog(){
-  const list = document.getElementById('logList');
+  const list = el('logList');
   if(log.length === 0){
     list.innerHTML = '<div class="log-empty">Nothing drawn yet.</div>';
     return;
   }
-  list.innerHTML = log.map((entry, i)=>{
-    const num = log.length - i;
-    if(entry.kind === "game"){
-      return `<div class="log-item">
-        <div class="log-num">${num}</div>
-        <div class="log-body">
-          <div class="log-cat">${entry.cat.toUpperCase()} · ${entry.time}</div>
-          <div class="log-text">${entry.text}</div>
-        </div>
-      </div>`;
-    } else if(entry.kind === "suggestion"){
-      return `<div class="log-item">
-        <div class="log-num">${num}</div>
-        <div class="log-body">
-          <div class="log-cat">SUGGESTION · ${entry.sugKind.toUpperCase()}</div>
-          <div class="log-text">${entry.text}</div>
-        </div>
-      </div>`;
-    } else {
-      return `<div class="log-item">
-        <div class="log-num">${num}</div>
-        <div class="log-body">
-          <div class="log-cat">TWO-PERSON STARTER</div>
-          <div class="log-text">${entry.rel} — ${entry.loc}</div>
-        </div>
-      </div>`;
-    }
-  }).join("");
+  list.innerHTML = log.map((entry, i)=>`<div class="log-item">
+      <div class="log-num">${log.length - i}</div>
+      <div class="log-body">
+        <div class="log-cat">${entry.logLabel}</div>
+        <div class="log-text">${entry.logText}</div>
+      </div>
+    </div>`).join("");
 }
 
 /* ---------------------------------------------------------
@@ -877,21 +1118,25 @@ document.querySelectorAll('.size-btn').forEach(btn=>{
   btn.addEventListener('click', ()=> switchSize(btn.dataset.size));
 });
 
-document.getElementById('drawBtn').addEventListener('click', ()=>{
-  if(mode === "draw") drawGame(); else drawPrompt();
+// Draw uses whatever buttons are selected, then clears them for the next draw
+el('drawBtn').addEventListener('click', ()=>{
+  runDraw(snapshotFilters());
+  resetSelections();
 });
 
-document.getElementById('skipBtn').addEventListener('click', ()=>{
-  if(mode === "draw") drawGame(); else drawPrompt();
+// Skip, Redraw pulls again from the same pool as the last draw
+el('skipBtn').addEventListener('click', ()=>{
+  runDraw(lastFilters || snapshotFilters());
 });
 
-document.getElementById('clearLog').addEventListener('click', ()=>{
+el('clearLog').addEventListener('click', ()=>{
   log = [];
   renderLog();
 });
 
 initBulbs();
 initBgStars();
+el('stage').innerHTML = idleHTML(mode);
 renderFilters();
 updateCount();
 </script>

@@ -1,4 +1,4 @@
-const CACHE_NAME = "improvibers-v1";
+const CACHE_NAME = "improvibes-v2";
 const ASSETS = [
   "./",
   "./index.html",
@@ -25,17 +25,21 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// Network first, so edits you push to GitHub show up on the next open.
+// If the network is unavailable (spotty rehearsal-space wifi), fall back to the cached copy.
 self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET") return;
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request)
-        .then((response) => {
+    fetch(event.request)
+      .then((response) => {
+        if (response && (response.ok || response.type === "opaque")) {
           const copy = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-          return response;
-        })
-        .catch(() => cached);
-    })
+        }
+        return response;
+      })
+      .catch(() =>
+        caches.match(event.request).then((cached) => cached || caches.match("./index.html"))
+      )
   );
 });
